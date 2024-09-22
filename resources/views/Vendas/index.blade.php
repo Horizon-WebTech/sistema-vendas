@@ -18,7 +18,28 @@
 </nav>
 
 <div class="container mt-5">
-	<h1 class="text-center">Bem-vindo ao Sistema de Vendas</h1>
-	<p class="text-center">Clique no menu acima para navegar pelo sistema.</p>
+	<h1>Vendas Realizadas</h1>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Cliente</th>
+				<th>Forma de Pagamento</th>
+				<th>Valor Total</th>
+				<th>Ações</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach ($vendas as $venda)
+			<tr>
+				<td>{{ $venda->cliente }}</td>
+				<td>{{ $venda->forma_pagamento }}</td>
+				<td>{{ $venda->valor_total }}</td>
+				<td>
+					<a href="{{ route('vendas.show', $venda->id) }}" class="btn btn-info">Detalhes</a>
+				</td>
+			</tr>
+			@endforeach
+		</tbody>
+	</table>
 </div>
 @endsection

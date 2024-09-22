@@ -1,6 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\VendaController;
+use App\Http\Controllers\ItemVendaController;
+use App\Http\Controllers\ParcelaController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +20,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+	return view('welcome');
 });
+
+Route::resource('clientes', ClienteController::class);
+Route::resource('produtos', ProdutoController::class);
+Route::resource('vendas', VendaController::class);
+
+Route::post('itens_venda', [ItemVendaController::class, 'store'])->name('itens_venda.store');
+Route::post('parcelas', [ParcelaController::class, 'store'])->name('parcelas.store');
