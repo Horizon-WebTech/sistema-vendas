@@ -1,45 +1,42 @@
-@extends('layouts.app')
+@extends('layouts.layout')
+
+@section('title', 'Vendas')
 
 @section('content')
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-	<div class="container-fluid">
-		<a class="navbar-brand" href="#">Sistema de Vendas</a>
-		<div class="collapse navbar-collapse">
-			<ul class="navbar-nav">
-				<li class="nav-item">
-					<a class="nav-link" href="{{ route('vendas.create') }}">Cadastrar Venda</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="{{ route('vendas.index') }}">Visualizar Vendas</a>
-				</li>
-			</ul>
-		</div>
-	</div>
-</nav>
-
-<div class="container mt-5">
-	<h1>Vendas Realizadas</h1>
-	<table class="table table-striped">
-		<thead>
-			<tr>
-				<th>Cliente</th>
-				<th>Forma de Pagamento</th>
-				<th>Valor Total</th>
-				<th>Ações</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach ($vendas as $venda)
-			<tr>
-				<td>{{ $venda->cliente }}</td>
-				<td>{{ $venda->forma_pagamento }}</td>
-				<td>{{ $venda->valor_total }}</td>
-				<td>
-					<a href="{{ route('vendas.show', $venda->id) }}" class="btn btn-info">Detalhes</a>
-				</td>
-			</tr>
-			@endforeach
-		</tbody>
-	</table>
+<div class="d-flex justify-content-between align-items-center">
+	<h1>Vendas</h1>
+	<a href="{{ route('vendas.create') }}" class="btn btn-primary">Nova Venda</a>
 </div>
+
+<table class="table table-bordered mt-4">
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Cliente</th>
+			<th>Data</th>
+			<th>Forma de Pagamento</th>
+			<th>Total</th>
+			<th>Ações</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach ($vendas as $venda)
+		<tr>
+			<td>{{ $venda->id }}</td>
+			<td>{{ $venda->cliente->nome ?? 'N/A' }}</td>
+			<td>{{ $venda->data_venda }}</td>
+			<td>{{ $venda->forma_pagamento }}</td>
+			<td>R$ {{ number_format($venda->total(), 2, ',', '.') }}</td>
+			<td>
+				<a href="{{ route('vendas.edit', $venda->id) }}" class="btn btn-warning btn-sm">Editar</a>
+				<form action="{{ route('vendas.destroy', $venda->id) }}" method="POST" style="display:inline-block;">
+					@csrf
+					@method('DELETE')
+					<button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+				</form>
+			</td>
+		</tr>
+		@endforeach
+	</tbody>
+</table>
 @endsection
