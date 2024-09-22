@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ItemVenda;
+use App\Models\ProdutoVenda;
 use Illuminate\Http\Request;
 
-class ItemVendaController extends Controller
+class ProdutoVendaController extends Controller
 {
 	public function store(Request $request)
 	{
@@ -16,7 +16,7 @@ class ItemVendaController extends Controller
 			'valor_unitario' => 'required|numeric',
 		]);
 
-		ItemVenda::create($request->all());
+		ProdutoVenda::create($request->all());
 		return redirect()->back();
 	}
 }

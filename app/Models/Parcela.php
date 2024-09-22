@@ -9,7 +9,7 @@ class Parcela extends Model
 {
 	use HasFactory;
 
-	protected $fillable = ['venda_id', 'data_vencimento', 'valor_parcela'];
+	protected $fillable = ['venda_id', 'valor', 'data_vencimento', 'valor_parcela'];
 
 	public function venda()
 	{

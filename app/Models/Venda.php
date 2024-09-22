@@ -16,13 +16,22 @@ class Venda extends Model
 		return $this->belongsTo(Cliente::class);
 	}
 
-	public function itensVenda()
+	public function produtos()
 	{
-		return $this->hasMany(ItemVenda::class);
+		return $this->belongsToMany(Produto::class)->withPivot('quantidade', 'valor_unitario');
 	}
 
 	public function parcelas()
 	{
 		return $this->hasMany(Parcela::class);
+	}
+
+	public function total()
+	{
+		$total = 0;
+		foreach ($this->produtos as $produto) {
+			$total += $produto->valor_unitario * $produto->pivot->quantidade;
+		}
+		return $total;
 	}
 }

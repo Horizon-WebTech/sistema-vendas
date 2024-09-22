@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\VendaController;
-use App\Http\Controllers\ItemVendaController;
+use App\Http\Controllers\ProdutoVendaController;
 use App\Http\Controllers\ParcelaController;
-
+use App\Models\ProdutoVenda;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,5 +27,6 @@ Route::resource('clientes', ClienteController::class);
 Route::resource('produtos', ProdutoController::class);
 Route::resource('vendas', VendaController::class);
 
-Route::post('itens_venda', [ItemVendaController::class, 'store'])->name('itens_venda.store');
+
+Route::post('produtos_venda', [ProdutoVendaController::class, 'store'])->name('produtos_venda.store');
 Route::post('parcelas', [ParcelaController::class, 'store'])->name('parcelas.store');

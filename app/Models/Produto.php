@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Produto extends Model
 {
 	use HasFactory;
-	
+
 	protected $fillable = ['nome', 'quantidade', 'valor_unitario'];
 
-	public function itensVenda()
+	public function vendas()
 	{
-		return $this->hasMany(ItemVenda::class);
+		return $this->belongsToMany(Venda::class)->withPivot('quantidade');
 	}
 }

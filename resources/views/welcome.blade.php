@@ -3,7 +3,7 @@
 @section('content')
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	<div class="container-fluid">
-		<a class="navbar-brand" href="#">Sistema de Vendas</a>
+		<a class="navbar-brand" href="/">Sistema de Vendas</a>
 		<div class="collapse navbar-collapse">
 			<ul class="navbar-nav">
 				<li class="nav-item">
