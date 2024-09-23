@@ -88,7 +88,7 @@
 			}
 		}
 		document.getElementById('total_venda').textContent = totalVenda.toFixed(2).replace('.', ',');
-		gerarParcelas(); // Atualiza as parcelas com base no total
+		gerarParcelas();
 	}
 
 	function gerarParcelas() {
@@ -127,8 +127,8 @@
 		const diferenca = totalVenda - totalParcelas;
 
 		for (let i = parcelaIndex + 1; i <= numParcelas; i++) {
-			const parcelaValorAtual = parseFloat(document.getElementById(`parcela_valor_${i}`).value); // Garantir que é float
-			const novoValor = parcelaValorAtual + (diferenca / (numParcelas - parcelaIndex)); // Ajuste para distribuir a diferença
+			const parcelaValorAtual = parseFloat(document.getElementById(`parcela_valor_${i}`).value);
+			const novoValor = parcelaValorAtual + (diferenca / (numParcelas - parcelaIndex));
 			document.getElementById(`parcela_valor_${i}`).value = novoValor.toFixed(2);
 		}
 	}
@@ -154,7 +154,6 @@
 		atualizarTotal();
 	});
 
-	// Atualiza o valor unitário ao selecionar o produto
 	function updateValorUnitario(itemIndex) {
 		const produtoSelect = document.getElementById(`produto_id_${itemIndex}`);
 		const valorUnitarioInput = document.getElementById(`valor_unitario_${itemIndex}`);
@@ -162,7 +161,7 @@
 		if (valor) {
 			valorUnitarioInput.value = parseFloat(valor).toFixed(2).replace('.', ',');
 		}
-		atualizarTotal(); // Atualiza o total sempre que o valor do produto é alterado
+		atualizarTotal();
 	}
 
 	document.addEventListener('DOMContentLoaded', atualizarTotal);
