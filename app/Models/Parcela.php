@@ -9,10 +9,10 @@ class Parcela extends Model
 {
 	use HasFactory;
 
-	protected $fillable = ['venda_id', 'valor', 'data_vencimento', 'valor_parcela'];
+	protected $fillable = ['venda_id', 'valor_parcela', 'data_vencimento'];
 
 	public function venda()
 	{
-		return $this->belongsTo(Venda::class);
+		return $this->belongsTo(Venda::class, 'venda_id');
 	}
 }

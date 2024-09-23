@@ -41,7 +41,7 @@
 	<h3>Produtos da Venda</h3>
 	<div id="produtos_venda">
 		@foreach($produtosVenda as $index => $produto)
-		<div class="mb-3">
+		<div class="mb-3" id="produto_item_{{ $index }}">
 			<label for="produto_id_{{ $index }}" class="form-label">Produto</label>
 			<select class="form-control" id="produto_id_{{ $index }}" name="produtos[{{ $index }}][produto_id]" required onchange="updateValorUnitario('{{ $index }}')">
 				@foreach($produtos as $p)
@@ -60,6 +60,8 @@
 		@endforeach
 	</div>
 
+	<button type="button" class="btn btn-secondary mb-3" id="add-item">Adicionar Item</button>
+
 	<div class="mb-3">
 		<label for="parcelas" class="form-label">Número de Parcelas</label>
 		<input type="number" class="form-control" id="parcelas" name="parcelas" value="{{ is_countable($venda->parcelas) ? count($venda->parcelas) : 1 }}" min="1" required oninput="gerarParcelas()">
@@ -70,7 +72,7 @@
 		@foreach($venda->parcelas as $index => $parcela)
 		<div class="mb-3">
 			<label for="parcela_valor_{{ $index }}" class="form-label">Valor da Parcela {{ $index + 1 }}</label>
-			<input type="number" class="form-control" id="parcela_valor_{{ $index }}" name="parcelas[{{ $index }}][valor]" value="{{ $parcela->valor }}" step="0.01" min="0" required oninput="reajustarParcelas('{{ $index }}', '{{ count($venda->parcelas) }}')">
+			<input type="number" class="form-control" id="parcela_valor_{{ $index }}" name="parcelas[{{ $index }}][valor]" value="{{ $parcela->valor }}" step="0.01" min="1" required oninput="reajustarParcelas('{{ $index }}', '{{ count($venda->parcelas) }}')">
 
 			<label for="parcela_data_{{ $index }}" class="form-label">Data de Vencimento</label>
 			<input type="date" class="form-control" id="parcela_data_{{ $index }}" name="parcelas[{{ $index }}][data_vencimento]" value="{{ $parcela->data_vencimento->format('Y-m-d') }}" required>
@@ -80,7 +82,6 @@
 		<p>Nenhuma parcela encontrada.</p>
 		@endif
 	</div>
-
 
 	<h3>Total da Venda: R$ <span id="total_venda">{{ number_format($venda->total, 2, ',', '.') }}</span></h3>
 
@@ -128,7 +129,7 @@
 				parcelasContainer.innerHTML += `
                     <div class="mb-3">
                         <label for="parcela_valor_${i}" class="form-label">Valor da Parcela ${i + 1}</label>
-                        <input type="number" class="form-control" id="parcela_valor_${i}" name="parcelas[${i}][valor]" value="${valorParcela}" step="0.01" min="0" required oninput="reajustarParcelas(${i}, ${numParcelas})">
+                        <input type="number" class="form-control" id="parcela_valor_${i}" name="parcelas[${i}][valor]" value="${valorParcela}" step="0.01" min="1" required oninput="reajustarParcelas(${i}, ${numParcelas})">
                         <label for="parcela_data_${i}" class="form-label">Data de Vencimento</label>
                         <input type="date" class="form-control" id="parcela_data_${i}" name="parcelas[${i}][data_vencimento]" value="${dataVencimento}" required>
                     </div>
@@ -164,7 +165,35 @@
 		atualizarTotal();
 	}
 
-	document.addEventListener('DOMContentLoaded', atualizarTotal);
+	document.addEventListener('DOMContentLoaded', function() {
+		atualizarTotal();
+		gerarParcelas();
+	});
+
+	document.getElementById('add-item').addEventListener('click', function() {
+		const newIndex = itemCount++;
+		const produtosContainer = document.getElementById('produtos_venda');
+		const newItem = `
+            <div class="mb-3" id="produto_item_${newIndex}">
+                <label for="produto_id_${newIndex}" class="form-label">Produto</label>
+                <select class="form-control" id="produto_id_${newIndex}" name="produtos[${newIndex}][produto_id]" required onchange="updateValorUnitario('${newIndex}')">
+                    @foreach($produtos as $p)
+                    <option value="{{ $p->id }}" data-valor="{{ $p->valor_unitario }}">
+                        {{ $p->nome }} - R$ {{ number_format($p->valor_unitario, 2, ',', '.') }}
+                    </option>
+                    @endforeach
+                </select>
+
+                <label for="quantidade_${newIndex}" class="form-label">Quantidade</label>
+                <input type="number" class="form-control" id="quantidade_${newIndex}" name="produtos[${newIndex}][quantidade]" value="1" required oninput="atualizarTotal()">
+
+                <label for="valor_unitario_${newIndex}" class="form-label">Valor Unitário</label>
+                <input type="text" class="form-control" id="valor_unitario_${newIndex}" name="produtos[${newIndex}][valor_unitario]" value="0,00" readonly>
+            </div>
+        `;
+		produtosContainer.insertAdjacentHTML('beforeend', newItem);
+		atualizarTotal();
+	});
 </script>
 
 @endsection

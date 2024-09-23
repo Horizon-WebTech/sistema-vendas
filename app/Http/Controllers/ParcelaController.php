@@ -10,12 +10,16 @@ class ParcelaController extends Controller
 	public function store(Request $request)
 	{
 		$request->validate([
-			'venda_id' => 'required|exists:vendas,id',
-			'data_vencimento' => 'required|date',
-			'valor_parcela' => 'required|numeric',
+			'parcelas' => 'required|array',
+			'parcelas.*.venda_id' => 'required|exists:vendas,id',
+			'parcelas.*.data_vencimento' => 'required|date',
+			'parcelas.*.valor_parcela' => 'required|numeric',
 		]);
 
-		Parcela::create($request->all());
-		return redirect()->back();
+		foreach ($request->parcelas as $parcela) {
+			Parcela::create($parcela);
+		}
+
+		return redirect()->back()->with('success', 'Parcelas salvas com sucesso!');
 	}
 }

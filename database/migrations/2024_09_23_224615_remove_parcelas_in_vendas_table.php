@@ -11,12 +11,8 @@ return new class extends Migration
 	 */
 	public function up(): void
 	{
-		Schema::create('parcelas', function (Blueprint $table) {
-			$table->id();
-			$table->foreignId('venda_id')->constrained('vendas')->onDelete('cascade');
-			$table->decimal('valor_parcela', 10, 2);
-			$table->date('data_vencimento');
-			$table->timestamps();
+		Schema::table('vendas', function (Blueprint $table) {
+			$table->dropColumn('parcelas');
 		});
 	}
 
@@ -25,6 +21,8 @@ return new class extends Migration
 	 */
 	public function down(): void
 	{
-		Schema::dropIfExists('parcelas');
+		Schema::table('vendas', function (Blueprint $table) {
+			$table->dropColumn('parcelas');
+		});
 	}
 };

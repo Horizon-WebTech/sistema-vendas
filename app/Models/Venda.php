@@ -23,7 +23,7 @@ class Venda extends Model
 
 	public function parcelas()
 	{
-		return $this->hasMany(Parcela::class);
+		return $this->hasMany(Parcela::class, 'venda_id', 'id');
 	}
 
 	public function total()

@@ -16,6 +16,7 @@
 			<th>Data</th>
 			<th>Forma de Pagamento</th>
 			<th>Total</th>
+			<th>Parcelas</th>
 			<th>Ações</th>
 		</tr>
 	</thead>
@@ -27,6 +28,7 @@
 			<td>{{ $venda->data_venda }}</td>
 			<td>{{ $venda->forma_pagamento }}</td>
 			<td>R$ {{ number_format($venda->total(), 2, ',', '.') }}</td>
+			<td>{{ $venda->parcelas->count() }}</td>
 			<td>
 				<a href="{{ route('vendas.edit', $venda->id) }}" class="btn btn-warning btn-sm">Editar</a>
 				<form action="{{ route('vendas.destroy', $venda->id) }}" method="POST" style="display:inline-block;">
