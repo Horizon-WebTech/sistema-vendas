@@ -12,7 +12,7 @@ class VendaController extends Controller
 {
 	public function index()
 	{
-		$vendas = Venda::with('cliente')->get();
+		$vendas = Venda::with(['cliente', 'parcelas'])->get();
 		return view('vendas.index', compact('vendas'));
 	}
 
@@ -34,17 +34,15 @@ class VendaController extends Controller
 
 		foreach ($request->produtos as $item) {
 			$produto = Produto::find($item['produto_id']);
-			$total += $produto->valor_unitario * $item['quantidade'];
+			$valorUnitario = str_replace(['R$', ' ', '.', ','], ['', '', '', '.'], $item['valor_unitario']);
+			$valorUnitario = floatval($valorUnitario);
+			$total += $valorUnitario * $item['quantidade'];
 		}
 
 		$venda->total = $total;
-		$venda->parcelas = (int) $request->parcelas;
 		$venda->save();
 
 		foreach ($request->produtos as $item) {
-			$valorUnitario = str_replace(['R$', ' ', '.'], '', $item['valor_unitario']);
-			$valorUnitario = str_replace(',', '.', $valorUnitario);
-
 			$venda->produtos()->attach($item['produto_id'], [
 				'quantidade' => $item['quantidade'],
 				'valor_unitario' => $valorUnitario
@@ -69,10 +67,10 @@ class VendaController extends Controller
 	}
 
 
-
 	public function edit($id)
 	{
 		$venda = Venda::findOrFail($id);
+		$produtosVenda = $venda->produtos;
 		$clientes = Cliente::all();
 		$produtos = Produto::all();
 
@@ -86,7 +84,6 @@ class VendaController extends Controller
 		return view('vendas.edit', compact('venda', 'clientes', 'produtos', 'produtosVenda'));
 	}
 
-
 	public function update(Request $request, $id)
 	{
 		$venda = Venda::findOrFail($id);
@@ -94,6 +91,7 @@ class VendaController extends Controller
 		$venda->forma_pagamento = $request->forma_pagamento;
 		$venda->data_venda = $request->data_venda;
 		$venda->save();
+		// dd($venda->all());
 
 		$venda->produtos()->detach();
 		foreach ($request->produtos as $item) {

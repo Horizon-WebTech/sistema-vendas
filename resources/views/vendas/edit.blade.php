@@ -43,20 +43,128 @@
 		@foreach($produtosVenda as $index => $produto)
 		<div class="mb-3">
 			<label for="produto_id_{{ $index }}" class="form-label">Produto</label>
-			<select class="form-control" id="produto_id_{{ $index }}" name="produtos[{{ $index }}][produto_id]" required>
+			<select class="form-control" id="produto_id_{{ $index }}" name="produtos[{{ $index }}][produto_id]" required onchange="updateValorUnitario('{{ $index }}')">
 				@foreach($produtos as $p)
-				<option value="{{ $p->id }}" {{ $p->id == $produto->id ? 'selected' : '' }}>
+				<option value="{{ $p->id }}" data-valor="{{ $p->valor_unitario }}" {{ $p->id == $produto->id ? 'selected' : '' }}>
 					{{ $p->nome }} - R$ {{ number_format($p->valor_unitario, 2, ',', '.') }}
 				</option>
 				@endforeach
 			</select>
+
 			<label for="quantidade_{{ $index }}" class="form-label">Quantidade</label>
-			<input type="number" class="form-control" id="quantidade_{{ $index }}" name="produtos[{{ $index }}][quantidade]" value="{{ $produto->pivot->quantidade }}" required>
+			<input type="number" class="form-control" id="quantidade_{{ $index }}" name="produtos[{{ $index }}][quantidade]" value="{{ $produto->pivot->quantidade }}" required oninput="atualizarTotal()">
+
+			<label for="valor_unitario_{{ $index }}" class="form-label">Valor Unitário</label>
+			<input type="text" class="form-control" id="valor_unitario_{{ $index }}" name="produtos[{{ $index }}][valor_unitario]" value="{{ number_format($produto->pivot->valor_unitario, 2, ',', '.') }}" readonly>
 		</div>
 		@endforeach
 	</div>
 
+	<div class="mb-3">
+		<label for="parcelas" class="form-label">Número de Parcelas</label>
+		<input type="number" class="form-control" id="parcelas" name="parcelas" value="{{ is_countable($venda->parcelas) ? count($venda->parcelas) : 1 }}" min="1" required oninput="gerarParcelas()">
+	</div>
+
+	<div id="parcelas_info">
+		@if(is_array($venda->parcelas) || is_object($venda->parcelas))
+		@foreach($venda->parcelas as $index => $parcela)
+		<div class="mb-3">
+			<label for="parcela_valor_{{ $index }}" class="form-label">Valor da Parcela {{ $index + 1 }}</label>
+			<input type="number" class="form-control" id="parcela_valor_{{ $index }}" name="parcelas[{{ $index }}][valor]" value="{{ $parcela->valor }}" step="0.01" min="0" required oninput="reajustarParcelas('{{ $index }}', '{{ count($venda->parcelas) }}')">
+
+			<label for="parcela_data_{{ $index }}" class="form-label">Data de Vencimento</label>
+			<input type="date" class="form-control" id="parcela_data_{{ $index }}" name="parcelas[{{ $index }}][data_vencimento]" value="{{ $parcela->data_vencimento->format('Y-m-d') }}" required>
+		</div>
+		@endforeach
+		@else
+		<p>Nenhuma parcela encontrada.</p>
+		@endif
+	</div>
+
+
+	<h3>Total da Venda: R$ <span id="total_venda">{{ number_format($venda->total, 2, ',', '.') }}</span></h3>
+
 	<button type="submit" class="btn btn-primary">Salvar Venda</button>
 	<a href="{{ route('vendas.index') }}" class="btn btn-secondary">Voltar</a>
 </form>
+
+<script>
+	let itemCount = document.querySelectorAll('#produtos_venda .mb-3').length;
+	let totalVenda = 0;
+
+	function atualizarTotal() {
+		totalVenda = 0;
+		for (let i = 0; i < itemCount; i++) {
+			const produtoId = document.querySelector(`#produto_id_${i}`);
+			const quantidade = document.querySelector(`#quantidade_${i}`);
+			const valorUnitario = document.querySelector(`#valor_unitario_${i}`);
+
+			if (produtoId && quantidade && valorUnitario) {
+				const valor = produtoId.options[produtoId.selectedIndex].getAttribute('data-valor');
+				if (valor && quantidade.value) {
+					const subtotal = parseFloat(valor) * parseInt(quantidade.value);
+					totalVenda += subtotal;
+					valorUnitario.value = parseFloat(valor).toFixed(2).replace('.', ',');
+				}
+			}
+		}
+		document.getElementById('total_venda').textContent = totalVenda.toFixed(2).replace('.', ',');
+		gerarParcelas();
+	}
+
+	function gerarParcelas() {
+		const numParcelas = parseInt(document.getElementById('parcelas').value);
+		const parcelasContainer = document.getElementById('parcelas_info');
+		parcelasContainer.innerHTML = '';
+
+		if (numParcelas > 0) {
+			const valorParcela = (totalVenda / numParcelas).toFixed(2);
+
+			for (let i = 0; i < numParcelas; i++) {
+				const dataAtual = new Date();
+				dataAtual.setMonth(dataAtual.getMonth() + i);
+				const dataVencimento = dataAtual.toISOString().split('T')[0];
+
+				parcelasContainer.innerHTML += `
+                    <div class="mb-3">
+                        <label for="parcela_valor_${i}" class="form-label">Valor da Parcela ${i + 1}</label>
+                        <input type="number" class="form-control" id="parcela_valor_${i}" name="parcelas[${i}][valor]" value="${valorParcela}" step="0.01" min="0" required oninput="reajustarParcelas(${i}, ${numParcelas})">
+                        <label for="parcela_data_${i}" class="form-label">Data de Vencimento</label>
+                        <input type="date" class="form-control" id="parcela_data_${i}" name="parcelas[${i}][data_vencimento]" value="${dataVencimento}" required>
+                    </div>
+                `;
+			}
+		}
+	}
+
+	function reajustarParcelas(parcelaIndex, numParcelas) {
+		let totalParcelas = 0;
+
+		for (let i = 0; i < numParcelas; i++) {
+			const parcelaValor = parseFloat(document.getElementById(`parcela_valor_${i}`).value);
+			totalParcelas += parcelaValor;
+		}
+
+		const diferenca = totalVenda - totalParcelas;
+
+		for (let i = parcelaIndex + 1; i < numParcelas; i++) {
+			const parcelaValorAtual = parseFloat(document.getElementById(`parcela_valor_${i}`).value);
+			const novoValor = parcelaValorAtual + (diferenca / (numParcelas - parcelaIndex));
+			document.getElementById(`parcela_valor_${i}`).value = novoValor.toFixed(2);
+		}
+	}
+
+	function updateValorUnitario(itemIndex) {
+		const produtoSelect = document.getElementById(`produto_id_${itemIndex}`);
+		const valorUnitarioInput = document.getElementById(`valor_unitario_${itemIndex}`);
+		const valor = produtoSelect.options[produtoSelect.selectedIndex].getAttribute('data-valor');
+		if (valor) {
+			valorUnitarioInput.value = parseFloat(valor).toFixed(2).replace('.', ',');
+		}
+		atualizarTotal();
+	}
+
+	document.addEventListener('DOMContentLoaded', atualizarTotal);
+</script>
+
 @endsection
