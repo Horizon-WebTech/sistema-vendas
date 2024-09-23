@@ -34,7 +34,7 @@
 	</div>
 
 	<footer class="text-center mt-4">
-		<p>&copy; {{ date('Y') }} - Sistema de Vendas</p>
+		<p>&copy; Copyright - 2024 Todos os direitos reservados à Pedro Santos</p>
 	</footer>
 </body>
 

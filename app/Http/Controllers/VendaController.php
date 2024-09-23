@@ -29,6 +29,16 @@ class VendaController extends Controller
 		$venda->cliente_id = $request->cliente_id;
 		$venda->forma_pagamento = $request->forma_pagamento;
 		$venda->data_venda = $request->data_venda;
+
+		$total = 0;
+
+		foreach ($request->produtos as $item) {
+			$produto = Produto::find($item['produto_id']);
+			$total += $produto->valor_unitario * $item['quantidade'];
+		}
+
+		$venda->total = $total;
+		$venda->parcelas = (int) $request->parcelas;
 		$venda->save();
 
 		foreach ($request->produtos as $item) {
@@ -41,8 +51,8 @@ class VendaController extends Controller
 			]);
 		}
 
-		$numParcelas = $request->parcelas;
-		$valorTotal = $venda->total();
+		$numParcelas = (int) $request->parcelas;
+		$valorTotal = (float) $venda->total;
 		$valorParcela = $valorTotal / $numParcelas;
 		$dataVencimento = now();
 
@@ -51,12 +61,14 @@ class VendaController extends Controller
 				'venda_id' => $venda->id,
 				'valor' => $valorParcela,
 				'valor_parcela' => $valorParcela,
-				'data_vencimento' => $dataVencimento->addMonth($i),
+				'data_vencimento' => $dataVencimento->copy()->addMonths($i),
 			]);
 		}
 
 		return redirect()->route('vendas.index')->with('success', 'Venda registrada com sucesso!');
 	}
+
+
 
 	public function edit($id)
 	{
@@ -64,7 +76,6 @@ class VendaController extends Controller
 		$clientes = Cliente::all();
 		$produtos = Produto::all();
 
-		// Certifique-se de que a data está sendo convertida para Carbon
 		$produtosVenda = $venda->produtos()->get();
 		if ($produtosVenda->isEmpty()) {
 			$produtosVenda = [];
@@ -86,7 +97,10 @@ class VendaController extends Controller
 
 		$venda->produtos()->detach();
 		foreach ($request->produtos as $item) {
-			$venda->produtos()->attach($item['produto_id'], ['quantidade' => $item['quantidade']]);
+			$valorUnitario = str_replace(['R$', ' ', '.'], '', $item['valor_unitario']);
+			$valorUnitario = str_replace(',', '.', $valorUnitario);
+
+			$venda->produtos()->attach($item['produto_id'], ['quantidade' => $item['quantidade'], 'valor_unitario' => $valorUnitario]);
 		}
 
 		return redirect()->route('vendas.index')->with('success', 'Venda atualizada com sucesso!');
